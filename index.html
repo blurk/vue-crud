@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>VUE CRUD</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link
+			rel="stylesheet"
+			href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+			integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+			crossorigin="anonymous"
+		/>
+		<link rel="stylesheet" href="./style.css" />
+	</head>
+	<body>
+		<!-- APP -->
+		<div id="app">
+			<h1 class="text-center">CRUD APP</h1>
+			<section v-if="loading">
+				<div class="loader">
+					<div class="pulse pulse1"></div>
+					<div class="pulse pulse2"></div>
+				</div>
+			</section>
+			<!-- TABLE START -->
+			<!-- END EDIT SECTION -->
+			<section v-else class="container">
+				<div v-if="!isSinglePost">
+					<div class="row mb-3">
+						<!-- INPUT START -->
+						<form @submit="add" class="col-6">
+							<h3>Add Form</h3>
+							<div class="form-group">
+								<input
+									class="form-control"
+									placeholder="Title"
+									ref="lname"
+									v-model="input.title"
+									id="title"
+									type="text"
+								/>
+							</div>
+							<div class="form-group">
+								<input
+									class="form-control"
+									placeholder="Description"
+									v-model="input.description"
+									id="description"
+									type="text"
+								/>
+							</div>
+							<div class="form-group">
+								<input
+									class="form-control"
+									placeholder="Image Link here"
+									v-model="input.image"
+									id="image"
+									type="text"
+								/>
+							</div>
+							<button type="submit" class="btn btn-primary w-100">Add</button>
+						</form>
+						<!-- INPUT END -->
+						<!-- EDIT START -->
+						<form @submit.prevent="editFormSubmit" class="col-6">
+							<h3>Edit form</h3>
+							<div class="form-group">
+								<input
+									class="form-control"
+									placeholder="Title"
+									:value="editInput.title"
+									v-model="editInput.title"
+									id="titleE"
+									type="text"
+									:disabled="!isEditing"
+								/>
+							</div>
+							<div class="form-group">
+								<input
+									class="form-control"
+									placeholder="Description"
+									v-model="editInput.description"
+									id="descriptionE"
+									type="text"
+									:disabled="!isEditing"
+								/>
+							</div>
+							<div class="form-group">
+								<input
+									class="form-control"
+									placeholder="Image Link here"
+									v-model="editInput.image"
+									id="imageE"
+									type="text"
+									:disabled="!isEditing"
+								/>
+							</div>
+							<button
+								type="submit"
+								class="btn btn-primary w-100"
+								:disabled="!isEditing"
+							>
+								Save Changes
+							</button>
+						</form>
+						<!-- EDIT END -->
+					</div>
+
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th v-for="column in columns" scope="col">{{column}}</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="(post, index) in posts" ref="rows">
+								<td>{{index}}</td>
+								<td><strong> {{post.title}} </strong></td>
+								<td><p>{{post.description}}</p></td>
+								<td class="color-change-2x p-0">
+									<img width="300px" height="200px" :src="post.image" />
+								</td>
+								<!-- ACTIONS START -->
+								<td>
+									<button
+										@click="editFormTrigger(index)"
+										class="btn btn-warning"
+										type="button"
+										data-toggle="modal"
+										data-target="#editModal"
+									>
+										Edit
+									</button>
+								</td>
+								<td>
+									<button
+										@click="remove(index, post.id)"
+										class="btn btn-danger text-white"
+									>
+										Remove<i class="bi bi-archive"></i>
+									</button>
+								</td>
+								<td>
+									<button @click="getOne(post.id)" class="btn btn-info">
+										Detail<i class="bi bi-archive"></i>
+									</button>
+								</td>
+								<!-- ACTIONS END -->
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div v-else>
+					<single-post :post="singlePost"></single-post>
+					<button
+						class="btn btn-primary d-block mx-auto mt-3"
+						@click="isSinglePost = false"
+					>
+						Back
+					</button>
+				</div>
+				<!-- TABLE END -->
+			</section>
+		</div>
+
+		<!-- SCRIPTS -->
+		<script
+			src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+			integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+			crossorigin="anonymous"
+		></script>
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+			integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+			crossorigin="anonymous"
+		></script>
+		<script
+			src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+			integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+			crossorigin="anonymous"
+		></script>
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.min.js"
+			integrity="sha512-BKbSR+cfyxLdMAsE0naLReFSLg8/pjbgfxHh/k/kUC82Hy7r6HtR5hLhobaln2gcTvzkyyehrdREdjpsQwy2Jw=="
+			crossorigin="anonymous"
+		></script>
+
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"
+			integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ=="
+			crossorigin="anonymous"
+		></script>
+		<script src="./utils.js"></script>
+		<script src="./componets.vue.js"></script>
+		<script src="./script.vue.js"></script>
+	</body>
+</html>
